@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BTC Overlay</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-family: Inter, Arial, sans-serif;
+    overflow: hidden;
+}
+
+/* CONTAINER */
+.container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 1s ease;
+}
+
+.container.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* BUTTON */
+.btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 20px 10px 14px;
+
+    /* ✅ GITHUB RAW IMAGE */
+    background-image: url("https://raw.githubusercontent.com/protectorebay/BTCBUTTONPNG/c15c4f2a8d722d725d584c193800abc8f48ea303/BUTTON-m1.png");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+
+    font-size: 16px;
+    font-weight: 800;
+    color: white;
+
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.8s ease;
+
+    white-space: nowrap;
+}
+
+/* DOT */
+.btn::before {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+/* POSITIVE */
+.btn.positive::before {
+    background: linear-gradient(135deg, #40e100, #ffd000);
+}
+
+/* NEGATIVE */
+.btn.negative::before {
+    background: linear-gradient(135deg, #ff3b3b, #ff0000);
+}
+
+/* LABEL */
+.label-box {
+    background: rgba(0,0,0,0.4);
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* VALUE */
+.value {
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.green { color: #40e100; }
+.red { color: #ff3b3b; }
+
+/* SHOW */
+.btn.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* HIDE */
+.btn.hide {
+    opacity: 0;
+    transform: translateX(-140px);
+    transition: all 2.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container" id="container">
+    <div class="btn" id="b1"></div>
+    <div class="btn" id="b2"></div>
+    <div class="btn" id="b3"></div>
+    <div class="btn" id="b4"></div>
+    <div class="btn" id="b5"></div>
+    <div class="btn" id="b6"></div>
+    <div class="btn" id="b7"></div>
+</div>
+
+<script>
+const container = document.getElementById("container");
+
+const buttons = [b1,b2,b3,b4,b5,b6,b7];
+
+const periods = [
+    {h:6,label:"6H"},
+    {h:12,label:"12H"},
+    {h:24,label:"24H"},
+    {h:48,label:"48H"},
+    {h:72,label:"72H"},
+    {h:168,label:"1W"},
+    {h:720,label:"1M"},
+];
+
+// --- FETCH ---
+async function fetchData() {
+    const [p,k] = await Promise.all([
+        fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
+        fetch("https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1h&limit=720")
+    ]);
+
+    const priceData = await p.json();
+    const klinesData = await k.json();
+
+    return {
+        current: parseFloat(priceData.price),
+        klines: klinesData
+    };
+}
+
+// --- UPDATE ---
+async function updateData() {
+    const data = await fetchData();
+    const current = data.current;
+    const klines = data.klines;
+
+    let maxWidth = 0;
+
+    for (let i = 0; i < periods.length; i++) {
+        const p = periods[i];
+
+        const index = klines.length - p.h;
+        const past = parseFloat(klines[index][4]);
+
+        const change = ((current - past) / past) * 100;
+        const positive = change >= 0;
+
+        buttons[i].classList.remove("positive","negative");
+        buttons[i].classList.add(positive ? "positive" : "negative");
+
+        buttons[i].innerHTML = `
+            <div class="label-box">${p.label}</div>
+            <div class="value ${positive ? 'green' : 'red'}">
+                ${positive ? '+' : ''}${change.toFixed(2)}%
+            </div>
+        `;
+    }
+
+    buttons.forEach(btn => btn.style.width = "auto");
+
+    buttons.forEach(btn => {
+        maxWidth = Math.max(maxWidth, btn.offsetWidth);
+    });
+
+    buttons.forEach(btn => {
+        btn.style.width = maxWidth + "px";
+    });
+}
+
+// --- SHOW ---
+function showSequence() {
+    container.classList.add("visible");
+
+    buttons.forEach((btn, i) => {
+        setTimeout(() => btn.classList.add("show"), i * 150);
+    });
+}
+
+// --- HIDE ---
+function hideSequence() {
+    [...buttons].reverse().forEach((btn, i) => {
+        setTimeout(() => btn.classList.add("hide"), i * 180);
+    });
+
+    setTimeout(() => {
+        container.classList.remove("visible");
+        buttons.forEach(btn => btn.classList.remove("show","hide"));
+    }, 2600);
+}
+
+// --- LOOP ---
+async function loop() {
+    while (true) {
+        await updateData();
+
+        showSequence();
+        await sleep(30000);
+
+        hideSequence();
+        await sleep(90000);
+    }
+}
+
+function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+}
+
+loop();
+</script>
+
+</body>
+</html>
