@@ -20,7 +20,7 @@ html, body {
     left: 20px;
     display: flex;
     flex-direction: column;
-    gap: 2px; /* 🔧 ultra tight */
+    gap: 4px; /* jemný spacing */
 
     opacity: 0;
     transform: translateX(-20px);
@@ -39,9 +39,10 @@ html, body {
     align-items: center;
     gap: 10px;
 
-    padding: 6px 18px 6px 12px; /* 🔧 smaller height */
+    padding: 8px 20px 8px 14px;
 
-    background-image: url("https://raw.githubusercontent.com/protectorebay/BTCBUTTONPNG/c15c4f2a8d722d725d584c193800abc8f48ea303/BUTTON-m1.png");
+    /* ✅ nový orezaný button */
+    background-image: url("https://raw.githubusercontent.com/protectorebay/BTCBUTTON2PNG/fe7e4b0ea2e173aba2d8bde4db52814df1c0c4c1/btc-m1-bez-live2.png");
     background-size: 100% 100%;
     background-repeat: no-repeat;
 
@@ -49,7 +50,7 @@ html, body {
     font-weight: 800;
     color: white;
 
-    line-height: 1; /* 🔧 important */
+    line-height: 1;
 
     opacity: 0;
     transform: translateX(-20px);
@@ -146,6 +147,7 @@ const periods = [
     {h:720,label:"1M"},
 ];
 
+// --- FETCH ---
 async function fetchData() {
     const [p,k] = await Promise.all([
         fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT"),
@@ -158,6 +160,7 @@ async function fetchData() {
     };
 }
 
+// --- UPDATE ---
 async function updateData() {
     const d = await fetchData();
     let maxWidth = 0;
@@ -182,11 +185,13 @@ async function updateData() {
     buttons.forEach(b=>b.style.width=maxWidth+"px");
 }
 
+// --- SHOW ---
 function showSequence(){
     container.classList.add("visible");
     buttons.forEach((b,i)=>setTimeout(()=>b.classList.add("show"),i*150));
 }
 
+// --- HIDE ---
 function hideSequence(){
     [...buttons].reverse().forEach((b,i)=>setTimeout(()=>b.classList.add("hide"),i*180));
     setTimeout(()=>{
@@ -195,6 +200,7 @@ function hideSequence(){
     },2600);
 }
 
+// --- LOOP ---
 async function loop(){
     while(true){
         await updateData();
