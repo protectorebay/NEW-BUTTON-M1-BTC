@@ -20,7 +20,7 @@ html, body {
     left: 20px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px; /* 🔧 tighter spacing */
 
     opacity: 0;
     transform: translateX(-20px);
@@ -36,12 +36,11 @@ html, body {
 .btn {
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: center; /* 🔧 vertical center */
     gap: 10px;
 
     padding: 10px 20px 10px 14px;
 
-    /* ✅ GITHUB RAW IMAGE */
     background-image: url("https://raw.githubusercontent.com/protectorebay/BTCBUTTONPNG/c15c4f2a8d722d725d584c193800abc8f48ea303/BUTTON-m1.png");
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -61,11 +60,13 @@ html, body {
 .btn::before {
     content: "";
     position: absolute;
-    right: 10px;
+    right: 16px; /* 🔧 moved left */
     top: 50%;
     transform: translateY(-50%);
-    width: 10px;
-    height: 10px;
+
+    width: 12px;  /* slightly bigger */
+    height: 12px;
+
     border-radius: 50%;
 }
 
@@ -81,15 +82,23 @@ html, body {
 
 /* LABEL */
 .label-box {
+    display: flex;              /* 🔧 fix centering */
+    align-items: center;
+    justify-content: center;
+
     background: rgba(0,0,0,0.4);
     border-radius: 6px;
     padding: 3px 8px;
+
     font-size: 12px;
     font-weight: 700;
 }
 
 /* VALUE */
 .value {
+    display: flex;              /* 🔧 extra alignment safety */
+    align-items: center;
+
     font-size: 18px;
     font-weight: 900;
 }
